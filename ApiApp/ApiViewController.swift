@@ -54,7 +54,21 @@ class ApiViewController: UIViewController, UITableViewDelegate, UITableViewDataS
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchCondition = searchBar.text!
+        // APIキー読み込み
+        let filePath = Bundle.main.path(forResource: "ApiKey", ofType:"plist" )
+        let plist = NSDictionary(contentsOfFile: filePath!)!
+        apiKey = plist["key"] as! String
+
+        // shopArray読み込み
         updateShopArray()
+        // ここまで追加
+        
+        // ここから
+        // RefreshControlの設定
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
+        tableView.refreshControl = refreshControl
+        // ここまで追加
     }
 
     
@@ -95,6 +109,8 @@ class ApiViewController: UIViewController, UITableViewDelegate, UITableViewDataS
                 "format": "json"
             ]
             print("APIリクエスト 開始位置: \(parameters["start"]!) 読み込み店舗数: \(parameters["count"]!)")    // 追加
+            print("APIリクエスト キーワード: \(parameters["keyword"]!)")
+        
             AF.request("https://webservice.recruit.co.jp/hotpepper/gourmet/v1/", method: .get, parameters: parameters).responseDecodable(of: ApiResponse.self) { response in
                 // 読み込み中状態終了
                 self.isLoading = false  // 追加
